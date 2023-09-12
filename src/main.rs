@@ -95,37 +95,27 @@ mod tests {
     }
 
     fn convert(data: Vec<usize>) -> Vec<Box<Expression>> {
-        match data.len() {
-            1 => vec![number(data[0])],
-            2 => vec![paren(number(data[0]), number(data[1]))],
-            3 => vec![
-                paren(paren(number(data[0]), number(data[1])), number(data[2])),
-                paren(number(data[0]), paren(number(data[1]), number(data[2]))),
-            ],
-            4 => vec![
-                paren(
-                    paren(number(data[0]), number(data[1])),
-                    paren(number(data[2]), number(data[3])),
-                ),
-                paren(
-                    paren(paren(number(data[0]), number(data[1])), number(data[2])),
-                    number(data[3]),
-                ),
-                paren(
-                    paren(number(data[0]), paren(number(data[1]), number(data[2]))),
-                    number(data[3]),
-                ),
-                paren(
-                    number(data[0]),
-                    paren(paren(number(data[1]), number(data[2])), number(data[3])),
-                ),
-                paren(
-                    number(data[0]),
-                    paren(number(data[1]), paren(number(data[2]), number(data[3]))),
-                ),
-            ],
-            _ => panic!("Unexpected data length"),
+        if data.len() == 1 {
+            return vec![number(data[0])];
         }
+
+        let mut result = Vec::new();
+
+        for i in 1..data.len() {
+            let left_slice = &data[0..i];
+            let right_slice = &data[i..];
+
+            let left_combinations = convert(left_slice.to_vec());
+            let right_combinations = convert(right_slice.to_vec());
+
+            for left in &left_combinations {
+                for right in &right_combinations {
+                    result.push(paren(left.clone(), right.clone()));
+                }
+            }
+        }
+
+        result
     }
 
     #[test]
@@ -190,31 +180,31 @@ mod tests {
         let vec = [1, 2, 3];
         let actual = convert(vec.to_vec());
         assert_eq!(actual.len(), 2);
-        assert_eq!(actual[0], paren(paren(number(1), number(2)), number(3)));
-        assert_eq!(actual[1], paren(number(1), paren(number(2), number(3))));
+        assert_eq!(actual[0], paren(number(1), paren(number(2), number(3))));
+        assert_eq!(actual[1], paren(paren(number(1), number(2)), number(3)));
 
         let vec = [1, 2, 3, 4];
         let actual = convert(vec.to_vec());
         assert_eq!(actual.len(), 5);
         assert_eq!(
             actual[0],
-            paren(paren(number(1), number(2)), paren(number(3), number(4))),
+            paren(number(1), paren(number(2), paren(number(3), number(4))))
         );
         assert_eq!(
             actual[1],
-            paren(paren(paren(number(1), number(2)), number(3)), number(4)),
-        );
-        assert_eq!(
-            actual[2],
-            paren(paren(number(1), paren(number(2), number(3))), number(4)),
-        );
-        assert_eq!(
-            actual[3],
             paren(number(1), paren(paren(number(2), number(3)), number(4)))
         );
         assert_eq!(
+            actual[2],
+            paren(paren(number(1), number(2)), paren(number(3), number(4))),
+        );
+        assert_eq!(
+            actual[3],
+            paren(paren(number(1), paren(number(2), number(3))), number(4)),
+        );
+        assert_eq!(
             actual[4],
-            paren(number(1), paren(number(2), paren(number(3), number(4))))
+            paren(paren(paren(number(1), number(2)), number(3)), number(4)),
         );
     }
 }
