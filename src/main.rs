@@ -118,6 +118,39 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    // #[derive(Debug, PartialEq)]
+    // enum Operator {
+    //     Undefined,
+    //     Add,
+    //     Sub,
+    //     Mult,
+    //     Div,
+    // }
+
+    // struct Expression {
+    //     operator: Operator,
+    //     expresssion: Option<Box<Expression>>,
+    //     numbers: Vec<usize>,
+    // }
+
+    // struct Expr {
+    //     expr: Option<Box<Vec<Expr>>>,
+    //     number: Option<usize>,
+    // }
+
+    use std::fmt::Debug;
+
+    #[derive(Debug, Clone, PartialEq)]
+    enum Expression {
+        Number(usize),
+        // Undefined(Box<Expression>, Box<Expression>),
+        // Add(Box<Expression>, Box<Expression>),
+        // Subtract(Box<Expression>, Box<Expression>),
+        // Multiply(Box<Expression>, Box<Expression>),
+        // Divide(Box<Expression>, Box<Expression>),
+        Paren(Box<Expression>, Box<Expression>),
+    }
+
     fn merge(current: usize, vec: Vec<usize>) -> Vec<usize> {
         let mut result = vec![current];
         for v in vec {
@@ -144,6 +177,63 @@ mod tests {
         }
 
         result
+    }
+
+    // fn split(data: Vec<usize>) -> Vec<Expression> {
+    //     let mut result = Vec::new();
+
+    //     for i in 1..data.len() + 1 {
+    //         if data.len() % i == 0 {
+    //             let row = data.to_vec();
+    //             result.push(Expression {
+    //                 operator: Operator::undefined,
+    //                 expresssion: None,
+    //                 numbers: row,
+    //             });
+    //         }
+    //     }
+
+    //     result
+    // }
+
+    fn number(number: usize) -> Box<Expression> {
+        Box::new(Expression::Number(number))
+    }
+    fn paren(a: Box<Expression>, b: Box<Expression>) -> Box<Expression> {
+        Box::new(Expression::Paren(a, b))
+    }
+
+    fn split(data: Vec<usize>) -> Vec<Box<Expression>> {
+        // let mut result = Vec::new();
+
+        match data.len() {
+            1 => vec![number(data[0])],
+            2 => vec![paren(number(data[0]), number(data[1]))],
+            3 => vec![paren(
+                paren(number(data[0]), number(data[1])),
+                number(data[2]),
+            )],
+            4 => vec![paren(
+                paren(number(data[0]), number(data[1])),
+                paren(number(data[2]), number(data[3])),
+            )],
+            _ => panic!("Unexpected data length"),
+        }
+
+        // // [11] => 1
+        // // [11, 22] => 1,2
+        // // [11, 22, 33] => 1,2,3
+        // // data.len() // 3
+        // // [11,22,33,44] => 1,2,3,4
+        // // data.len() // 4
+        // for i in 1..data.len() + 1 {
+        //     for ii in 0..i {
+        //         let number = Box::new(Expression::Number(data[ii]));
+        //         result.push(Box::new(Expression::Paren(number)));
+        //     }
+        // }
+
+        // result
     }
 
     #[test]
@@ -191,5 +281,56 @@ mod tests {
                 [4, 3, 2, 1]
             ]
         );
+    }
+
+    #[test]
+    fn test_split() {
+        let vec = [1];
+        let actual = split(vec.to_vec());
+        assert_eq!(actual.len(), 1);
+        assert_eq!(actual[0], number(1));
+
+        let vec = [1, 2];
+        let actual = split(vec.to_vec());
+        assert_eq!(actual.len(), 1);
+        assert_eq!(actual[0], paren(number(1), number(2)));
+
+        let vec = [1, 2, 3];
+        let actual = split(vec.to_vec());
+        assert_eq!(actual.len(), 1);
+        assert_eq!(actual[0], paren(paren(number(1), number(2)), number(3)));
+
+        let vec = [1, 2, 3, 4];
+        let actual = split(vec.to_vec());
+        assert_eq!(actual.len(), 1);
+        assert_eq!(
+            actual[0],
+            paren(paren(number(1), number(2)), paren(number(3), number(4)))
+        );
+
+        // let vec = [1, 2];
+        // let actual = split(vec.to_vec());
+        // assert_eq!(actual.len(), 2);
+        // assert_eq!(
+        //     actual[1],
+        //     Box::new(Expression::Paren(Box::new(Expression::Number(1))))
+        // );
+        // assert_eq!(
+        //     actual[1],
+        //     Box::new(Expression::Paren(ox::new(Expression::Number(1))))
+        // )
+
+        // let vec = [1, 2];
+        // let actual = split(vec.to_vec());
+
+        // let vec = [1, 2, 3];
+        // let actual = split(vec.to_vec());
+        // assert_eq!(actual.len(), 3);
+        // assert!(actual[0].expr.is_none());
+        // assert!(actual[1].expr.is_none());
+        // assert!(actual[2].expr.is_none());
+        // assert_eq!(actual[0].number, Some(1));
+        // assert_eq!(actual[1].number, Some(2));
+        // assert_eq!(actual[2].number, Some(3));
     }
 }
