@@ -203,20 +203,38 @@ mod tests {
         Box::new(Expression::Paren(a, b))
     }
 
-    fn split(data: Vec<usize>) -> Vec<Box<Expression>> {
+    fn convert(data: Vec<usize>) -> Vec<Box<Expression>> {
         // let mut result = Vec::new();
 
         match data.len() {
             1 => vec![number(data[0])],
             2 => vec![paren(number(data[0]), number(data[1]))],
-            3 => vec![paren(
-                paren(number(data[0]), number(data[1])),
-                number(data[2]),
-            )],
-            4 => vec![paren(
-                paren(number(data[0]), number(data[1])),
-                paren(number(data[2]), number(data[3])),
-            )],
+            3 => vec![
+                paren(paren(number(data[0]), number(data[1])), number(data[2])),
+                paren(number(data[0]), paren(number(data[1]), number(data[2]))),
+            ],
+            4 => vec![
+                paren(
+                    paren(number(data[0]), number(data[1])),
+                    paren(number(data[2]), number(data[3])),
+                ),
+                paren(
+                    paren(paren(number(data[0]), number(data[1])), number(data[2])),
+                    number(data[3]),
+                ),
+                paren(
+                    paren(number(data[0]), paren(number(data[1]), number(data[2]))),
+                    number(data[3]),
+                ),
+                paren(
+                    number(data[0]),
+                    paren(paren(number(data[1]), number(data[2])), number(data[3])),
+                ),
+                paren(
+                    number(data[0]),
+                    paren(number(data[1]), paren(number(data[2]), number(data[3]))),
+                ),
+            ],
             _ => panic!("Unexpected data length"),
         }
 
@@ -284,28 +302,46 @@ mod tests {
     }
 
     #[test]
-    fn test_split() {
+    fn test_convert() {
         let vec = [1];
-        let actual = split(vec.to_vec());
+        let actual = convert(vec.to_vec());
         assert_eq!(actual.len(), 1);
         assert_eq!(actual[0], number(1));
 
         let vec = [1, 2];
-        let actual = split(vec.to_vec());
+        let actual = convert(vec.to_vec());
         assert_eq!(actual.len(), 1);
         assert_eq!(actual[0], paren(number(1), number(2)));
 
         let vec = [1, 2, 3];
-        let actual = split(vec.to_vec());
-        assert_eq!(actual.len(), 1);
+        let actual = convert(vec.to_vec());
+        assert_eq!(actual.len(), 2);
         assert_eq!(actual[0], paren(paren(number(1), number(2)), number(3)));
+        assert_eq!(actual[1], paren(number(1), paren(number(2), number(3))));
 
         let vec = [1, 2, 3, 4];
-        let actual = split(vec.to_vec());
-        assert_eq!(actual.len(), 1);
+        let actual = convert(vec.to_vec());
+        // paren(number(1), number(2), number(3), number(4)),
+        assert_eq!(actual.len(), 5);
         assert_eq!(
             actual[0],
-            paren(paren(number(1), number(2)), paren(number(3), number(4)))
+            paren(paren(number(1), number(2)), paren(number(3), number(4))),
+        );
+        assert_eq!(
+            actual[1],
+            paren(paren(paren(number(1), number(2)), number(3)), number(4)),
+        );
+        assert_eq!(
+            actual[2],
+            paren(paren(number(1), paren(number(2), number(3))), number(4)),
+        );
+        assert_eq!(
+            actual[3],
+            paren(number(1), paren(paren(number(2), number(3)), number(4)))
+        );
+        assert_eq!(
+            actual[4],
+            paren(number(1), paren(number(2), paren(number(3), number(4))))
         );
 
         // let vec = [1, 2];
