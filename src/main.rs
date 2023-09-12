@@ -118,30 +118,78 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    fn permute(data: Vec<usize>, start: usize) -> Vec<Vec<usize>> {
-        let mut result: Vec<Vec<usize>> = Vec::new();
-        for d in data {
-            let row: Vec<usize> = vec![d];
-            result.push(row)
+    fn merge(current: usize, vec: Vec<usize>) -> Vec<usize> {
+        let mut result = vec![current];
+        for v in vec {
+            result.push(v);
         }
         result
     }
 
-    #[test]
-    fn test() {
-        let vec = [1, 2, 3];
-        assert_eq!(permute(vec.to_vec(), 0), [[1], [2], [3],]);
+    fn permute(data: Vec<usize>) -> Vec<Vec<usize>> {
+        if data.len() == 1 {
+            return vec![data];
+        }
 
-        // assert_eq!(
-        //     permute(vec.to_vec(), 0),
-        //     [
-        //         [1, 2, 3],
-        //         [1, 3, 2],
-        //         [2, 1, 3],
-        //         [2, 3, 1],
-        //         [3, 1, 2],
-        //         [3, 2, 1],
-        //     ]
-        // );
+        let mut result: Vec<Vec<usize>> = Vec::new();
+
+        for i in 0..data.len() {
+            let mut vec = data.to_vec();
+            let current = vec[i];
+            vec.swap_remove(i);
+            for rest in permute(vec.clone()) {
+                let row = merge(current, rest);
+                result.push(row)
+            }
+        }
+
+        result
+    }
+
+    #[test]
+    fn test_permute() {
+        let vec = [1, 2, 3];
+        assert_eq!(
+            permute(vec.to_vec()),
+            [
+                [1, 3, 2],
+                [1, 2, 3],
+                [2, 1, 3],
+                [2, 3, 1],
+                [3, 1, 2],
+                [3, 2, 1]
+            ]
+        );
+
+        let vec = [1, 2, 3, 4];
+        assert_eq!(
+            permute(vec.to_vec()),
+            [
+                [1, 4, 3, 2],
+                [1, 4, 2, 3],
+                [1, 2, 4, 3],
+                [1, 2, 3, 4],
+                [1, 3, 4, 2],
+                [1, 3, 2, 4],
+                [2, 1, 3, 4],
+                [2, 1, 4, 3],
+                [2, 4, 1, 3],
+                [2, 4, 3, 1],
+                [2, 3, 1, 4],
+                [2, 3, 4, 1],
+                [3, 1, 4, 2],
+                [3, 1, 2, 4],
+                [3, 2, 1, 4],
+                [3, 2, 4, 1],
+                [3, 4, 1, 2],
+                [3, 4, 2, 1],
+                [4, 1, 3, 2],
+                [4, 1, 2, 3],
+                [4, 2, 1, 3],
+                [4, 2, 3, 1],
+                [4, 3, 1, 2],
+                [4, 3, 2, 1]
+            ]
+        );
     }
 }
