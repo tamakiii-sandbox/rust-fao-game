@@ -1,9 +1,14 @@
 extern crate clap;
 
-use clap::{value_parser, Arg, Command};
+use clap::{builder::EnumValueParser, value_parser, Arg, Command};
 
-fn main() {
-    let matches = Command::new("fao")
+struct Arguments {
+    expected: usize,
+    numbers: Vec<usize>,
+}
+
+fn get_command() -> Command {
+    Command::new("fao")
         .version("0.1")
         .arg(
             Arg::new("expected")
@@ -12,15 +17,26 @@ fn main() {
                 .value_parser(value_parser!(usize)),
         )
         .arg(Arg::new("numbers").long("numbers").required(true))
-        .get_matches();
+}
 
-    let expected = matches.get_one::<usize>("expected").unwrap();
-    let numbers_str = matches.get_one::<String>("numbers").unwrap();
-    let numbers: Vec<usize> = numbers_str
-        .split(',')
-        .filter_map(|n| n.parse::<usize>().ok())
-        .collect();
+fn get_arguments(expected: &usize, numbers: &String) -> Arguments {
+    Arguments {
+        expected: *expected,
+        numbers: numbers.split(',').filter_map(|n| n.parse().ok()).collect(),
+    }
+}
 
-    println!("Expected: {}", expected);
-    println!("Numbers: {:?}", numbers);
+fn parse_args() -> Arguments {
+    let matches = get_command().get_matches();
+
+    get_arguments(
+        matches.get_one::<usize>("expected").unwrap(),
+        matches.get_one::<String>("numbers").unwrap(),
+    )
+}
+
+fn main() {
+    let args = parse_args();
+    println!("Expected: {}", args.expected);
+    println!("Numbers: {:?}", args.numbers);
 }
