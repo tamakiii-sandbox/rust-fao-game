@@ -1,7 +1,7 @@
 extern crate clap;
 
 use clap::{value_parser, Arg, Command};
-use eval::{eval, to_value};
+// use eval::{eval, to_value};
 
 struct Arguments {
     expected: usize,
@@ -36,108 +36,16 @@ fn parse_args() -> Arguments {
     )
 }
 
-// fn permute(data: &mut Vec<usize>, start: usize, result: &mut Vec<Vec<usize>>) {
-//     let length = data.len();
-//     if start == length - 1 {
-//         result.push(data.clone());
-//     }
-//     for i in start..length {
-//         data.swap(start, i);
-//         permute(data, start + 1, result);
-//         data.swap(start, i);
-//     }
-// }
-
-fn permute(data: &mut Vec<usize>, start: usize) -> Vec<Vec<usize>> {
-    let mut result = Vec::new();
-    let length = data.len();
-    if start == length - 1 {
-        result.push(data.clone());
-        return result;
-    }
-    for i in start..length {
-        data.swap(start, i);
-        let mut r = permute(data, start + 1);
-        result.append(&mut r);
-        data.swap(start, i);
-    }
-    result
-}
-
-fn split_vec(data: &[usize], start: usize, current: Vec<Vec<usize>>) -> Vec<Vec<Vec<usize>>> {
-    let mut result = Vec::new();
-
-    if start == data.len() {
-        result.push(current.clone());
-        return result;
-    }
-
-    // Extend existing sub-vectors
-    for i in 0..current.len() {
-        let mut new_current = current.clone();
-        new_current[i].push(data[start]);
-        let mut sub_splits = split_vec(data, start + 1, new_current);
-        result.append(&mut sub_splits);
-    }
-
-    // Create a new sub-vector
-    let mut new_current = current.clone();
-    new_current.push(vec![data[start]]);
-    let mut sub_splits = split_vec(data, start + 1, new_current);
-    result.append(&mut sub_splits);
-
-    result
-}
 fn main() {
     let args = parse_args();
 
-    let mut numbers = args.numbers.to_vec();
-    let result = permute(&mut numbers, 0);
-    for p in result {
-        for _ in 1..p.len() {
-            let result = split_vec(&p, 0, Vec::new());
-            for j in result {
-                println!("{:?}", j);
-            }
-        }
-    }
-
-    // sort order
-    // split point
-    // operand
-
-    // 1, 2, 3
-    // () () ()
-    // () ()
-    // () ()
-
-    // 1,2,3
-    // (1),2,3
-    //
+    // let mut numbers = args.numbers.to_vec();
+    println!("expected: {}", args.expected);
+    println!("numbers: {:?}", args.numbers);
 }
 
 #[cfg(test)]
 mod tests {
-    // #[derive(Debug, PartialEq)]
-    // enum Operator {
-    //     Undefined,
-    //     Add,
-    //     Sub,
-    //     Mult,
-    //     Div,
-    // }
-
-    // struct Expression {
-    //     operator: Operator,
-    //     expresssion: Option<Box<Expression>>,
-    //     numbers: Vec<usize>,
-    // }
-
-    // struct Expr {
-    //     expr: Option<Box<Vec<Expr>>>,
-    //     number: Option<usize>,
-    // }
-
     use std::fmt::Debug;
 
     #[derive(Debug, Clone, PartialEq)]
@@ -179,23 +87,6 @@ mod tests {
         result
     }
 
-    // fn split(data: Vec<usize>) -> Vec<Expression> {
-    //     let mut result = Vec::new();
-
-    //     for i in 1..data.len() + 1 {
-    //         if data.len() % i == 0 {
-    //             let row = data.to_vec();
-    //             result.push(Expression {
-    //                 operator: Operator::undefined,
-    //                 expresssion: None,
-    //                 numbers: row,
-    //             });
-    //         }
-    //     }
-
-    //     result
-    // }
-
     fn number(number: usize) -> Box<Expression> {
         Box::new(Expression::Number(number))
     }
@@ -204,8 +95,6 @@ mod tests {
     }
 
     fn convert(data: Vec<usize>) -> Vec<Box<Expression>> {
-        // let mut result = Vec::new();
-
         match data.len() {
             1 => vec![number(data[0])],
             2 => vec![paren(number(data[0]), number(data[1]))],
@@ -237,21 +126,6 @@ mod tests {
             ],
             _ => panic!("Unexpected data length"),
         }
-
-        // // [11] => 1
-        // // [11, 22] => 1,2
-        // // [11, 22, 33] => 1,2,3
-        // // data.len() // 3
-        // // [11,22,33,44] => 1,2,3,4
-        // // data.len() // 4
-        // for i in 1..data.len() + 1 {
-        //     for ii in 0..i {
-        //         let number = Box::new(Expression::Number(data[ii]));
-        //         result.push(Box::new(Expression::Paren(number)));
-        //     }
-        // }
-
-        // result
     }
 
     #[test]
@@ -321,7 +195,6 @@ mod tests {
 
         let vec = [1, 2, 3, 4];
         let actual = convert(vec.to_vec());
-        // paren(number(1), number(2), number(3), number(4)),
         assert_eq!(actual.len(), 5);
         assert_eq!(
             actual[0],
@@ -343,30 +216,5 @@ mod tests {
             actual[4],
             paren(number(1), paren(number(2), paren(number(3), number(4))))
         );
-
-        // let vec = [1, 2];
-        // let actual = split(vec.to_vec());
-        // assert_eq!(actual.len(), 2);
-        // assert_eq!(
-        //     actual[1],
-        //     Box::new(Expression::Paren(Box::new(Expression::Number(1))))
-        // );
-        // assert_eq!(
-        //     actual[1],
-        //     Box::new(Expression::Paren(ox::new(Expression::Number(1))))
-        // )
-
-        // let vec = [1, 2];
-        // let actual = split(vec.to_vec());
-
-        // let vec = [1, 2, 3];
-        // let actual = split(vec.to_vec());
-        // assert_eq!(actual.len(), 3);
-        // assert!(actual[0].expr.is_none());
-        // assert!(actual[1].expr.is_none());
-        // assert!(actual[2].expr.is_none());
-        // assert_eq!(actual[0].number, Some(1));
-        // assert_eq!(actual[1].number, Some(2));
-        // assert_eq!(actual[2].number, Some(3));
     }
 }
