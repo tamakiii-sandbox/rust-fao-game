@@ -49,6 +49,15 @@ mod tests {
     use std::fmt::Debug;
 
     #[derive(Debug, Clone, PartialEq)]
+    enum Operand {
+        Undefined,
+        Add,
+        Substract,
+        Multiply,
+        Divide,
+    }
+
+    #[derive(Debug, Clone, PartialEq)]
     enum Expression {
         Number(usize),
         // Undefined(Box<Expression>, Box<Expression>),
@@ -56,7 +65,7 @@ mod tests {
         // Subtract(Box<Expression>, Box<Expression>),
         // Multiply(Box<Expression>, Box<Expression>),
         // Divide(Box<Expression>, Box<Expression>),
-        Paren(Box<Expression>, Box<Expression>),
+        Paren(Box<Expression>, Operand, Box<Expression>),
     }
 
     fn merge(current: usize, vec: Vec<usize>) -> Vec<usize> {
@@ -90,8 +99,8 @@ mod tests {
     fn number(number: usize) -> Box<Expression> {
         Box::new(Expression::Number(number))
     }
-    fn paren(a: Box<Expression>, b: Box<Expression>) -> Box<Expression> {
-        Box::new(Expression::Paren(a, b))
+    fn paren(a: Box<Expression>, o: Operand, b: Box<Expression>) -> Box<Expression> {
+        Box::new(Expression::Paren(a, Operand::Undefined, b))
     }
 
     fn convert(data: Vec<usize>) -> Vec<Box<Expression>> {
@@ -110,7 +119,7 @@ mod tests {
 
             for left in &left_combinations {
                 for right in &right_combinations {
-                    result.push(paren(left.clone(), right.clone()));
+                    result.push(paren(left.clone(), Operand::Undefined, right.clone()));
                 }
             }
         }
@@ -175,36 +184,86 @@ mod tests {
         let vec = [1, 2];
         let actual = convert(vec.to_vec());
         assert_eq!(actual.len(), 1);
-        assert_eq!(actual[0], paren(number(1), number(2)));
+        assert_eq!(actual[0], paren(number(1), Operand::Undefined, number(2)));
 
         let vec = [1, 2, 3];
         let actual = convert(vec.to_vec());
         assert_eq!(actual.len(), 2);
-        assert_eq!(actual[0], paren(number(1), paren(number(2), number(3))));
-        assert_eq!(actual[1], paren(paren(number(1), number(2)), number(3)));
+        assert_eq!(
+            actual[0],
+            paren(
+                number(1),
+                Operand::Undefined,
+                paren(number(2), Operand::Undefined, number(3))
+            )
+        );
+        assert_eq!(
+            actual[1],
+            paren(
+                paren(number(1), Operand::Undefined, number(2)),
+                Operand::Undefined,
+                number(3)
+            )
+        );
 
         let vec = [1, 2, 3, 4];
         let actual = convert(vec.to_vec());
         assert_eq!(actual.len(), 5);
         assert_eq!(
             actual[0],
-            paren(number(1), paren(number(2), paren(number(3), number(4))))
+            paren(
+                number(1),
+                Operand::Undefined,
+                paren(
+                    number(2),
+                    Operand::Undefined,
+                    paren(number(3), Operand::Undefined, number(4))
+                )
+            )
         );
         assert_eq!(
             actual[1],
-            paren(number(1), paren(paren(number(2), number(3)), number(4)))
+            paren(
+                number(1),
+                Operand::Undefined,
+                paren(
+                    paren(number(2), Operand::Undefined, number(3)),
+                    Operand::Undefined,
+                    number(4)
+                )
+            )
         );
         assert_eq!(
             actual[2],
-            paren(paren(number(1), number(2)), paren(number(3), number(4))),
+            paren(
+                paren(number(1), Operand::Undefined, number(2)),
+                Operand::Undefined,
+                paren(number(3), Operand::Undefined, number(4))
+            ),
         );
         assert_eq!(
             actual[3],
-            paren(paren(number(1), paren(number(2), number(3))), number(4)),
+            paren(
+                paren(
+                    number(1),
+                    Operand::Undefined,
+                    paren(number(2), Operand::Undefined, number(3))
+                ),
+                Operand::Undefined,
+                number(4)
+            ),
         );
         assert_eq!(
             actual[4],
-            paren(paren(paren(number(1), number(2)), number(3)), number(4)),
+            paren(
+                paren(
+                    paren(number(1), Operand::Undefined, number(2)),
+                    Operand::Undefined,
+                    number(3)
+                ),
+                Operand::Undefined,
+                number(4)
+            ),
         );
     }
 }
