@@ -199,6 +199,9 @@ mod tests {
 
     #[test]
     fn test_permute() {
+        let vec = [1, 1];
+        assert_eq!(permute(vec.to_vec()), [[1, 1], [1, 1]]);
+
         let vec = [1, 2, 3];
         assert_eq!(
             permute(vec.to_vec()),
@@ -255,6 +258,11 @@ mod tests {
         let actual = convert(vec.to_vec());
         assert_eq!(actual.len(), 1);
         assert_eq!(actual[0], paren(number(1), Operand::Undefined, number(2)));
+
+        let vec = [1, 1];
+        let actual = convert(vec.to_vec());
+        assert_eq!(actual.len(), 1);
+        assert_eq!(actual[0], paren(number(1), Operand::Undefined, number(1)));
 
         let vec = [1, 2, 3];
         let actual = convert(vec.to_vec());
